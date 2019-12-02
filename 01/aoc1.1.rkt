@@ -31,10 +31,8 @@
 (let ([pinput (open-input-file
                 (vector-ref (current-command-line-arguments) 0)
                 #:mode 'text)])
-  (display (apply +
-                  (map fuel-closure
-                       (map
-                         (lambda (s) (rocket-equation (string->number s)))
-                         (input-to-list pinput)))))
+  (display (foldl (lambda (s acc)
+                   (+ acc (fuel-closure (rocket-equation (string->number s)))))
+                  0 (input-to-list pinput)))
   (newline)
   (close-input-port pinput))

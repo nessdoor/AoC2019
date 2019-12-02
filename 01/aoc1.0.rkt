@@ -18,9 +18,8 @@
                 (vector-ref (current-command-line-arguments) 0)
                 #:mode 'text)])
   (display
-    (apply +
-           (map (lambda (s)
-                  (- (floor (/ (string->number s) 3)) 2))
-                (input-to-list pinput))))
+    (foldl (lambda (s acc)
+            (+ acc (- (floor (/ (string->number s) 3)) 2)))
+           0 (input-to-list pinput)))
   (newline)
   (close-input-port pinput))
