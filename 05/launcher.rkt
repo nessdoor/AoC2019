@@ -1,12 +1,11 @@
 #lang racket
 
 (require csv-reading)
-(require "run-intcode.rkt")
 
-(let ([input (open-input-file
-               (vector-ref (current-command-line-arguments) 0)
+(let ([interpreter-path (vector-ref (current-command-line-arguments) 0)]
+      [input (open-input-file
+               (vector-ref (current-command-line-arguments) 1)
                #:mode 'text)])
-  (run-intcode (list->vector
-                 (map string->number
-                      ((make-csv-reader input)))))
+  ((dynamic-require interpreter-path 'run-intcode) ; dynamically import the interpreter
+   (list->vector (map string->number ((make-csv-reader input)))))
   (close-input-port input))
