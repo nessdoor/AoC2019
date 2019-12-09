@@ -34,8 +34,8 @@
              (if (exact-integer? input)
                  (vector-set! v (vector-ref v (+ 1 ip)) input)
                  (raise-user-error "Error: expected integer, given " input))))
-      ((4) (newline)
-           (write (resolver v (+ 1 ip) m)))
+      ((4) (write (resolver v (+ 1 ip) m))
+           (newline))
       (else (error "Unexpected IO opcode: " op)))
     2))
 
