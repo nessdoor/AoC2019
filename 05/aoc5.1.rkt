@@ -27,15 +27,15 @@
     (+ 4 ip)))
 
 (define io ; execute an I/O instruction
-  (lambda (v op ip m)
+  (lambda (v op ip m input output)
     (case op
       ((3) (display "> ")
-           (let ([input (read)])
+           (let ([input (read input)])
              (if (exact-integer? input)
                  (vector-set! v (vector-ref v (+ 1 ip)) input)
                  (raise-user-error "Error: expected integer, given " input))))
       ((4) (newline)
-           (write (resolver v (+ 1 ip) m)))
+           (write (resolver v (+ 1 ip) m) output))
       (else (error "Unexpected IO opcode: " op)))
     (+ 2 ip)))
 
@@ -62,7 +62,7 @@
     (+ ip 4)))
 
 (define run-intcode ; run an intcode program
-  (lambda (v)
+  (lambda (v input-port output-port)
     (define ric-rec
       (lambda (ip)
         (let* ([instruction (vector-ref v ip)]
@@ -72,10 +72,10 @@
                [mode2 (decoder instruction 4)])
           (unless (= 99 opcode) ; stop at opcode 99
             (ric-rec (case opcode
-                            ((1 2) (alu v opcode ip mode0 mode1))       ; arithmetic ops branch
-                            ((3 4) (io v opcode ip mode0))              ; I/O branch
-                            ((5 6) (branch v opcode ip mode0 mode1))    ; jumps branch
-                            ((7 8) (compare v opcode ip mode0 mode1))   ; comparison branch
+                            ((1 2) (alu v opcode ip mode0 mode1))                   ; arithmetic ops branch
+                            ((3 4) (io v opcode ip mode0 input-port output-port))   ; I/O branch
+                            ((5 6) (branch v opcode ip mode0 mode1))                ; jumps branch
+                            ((7 8) (compare v opcode ip mode0 mode1))               ; comparison branch
                             (else (error "Unexpected opcode: " opcode))))))))
 
     (ric-rec 0)))
