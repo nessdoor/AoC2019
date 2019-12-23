@@ -11,10 +11,10 @@
         (if (null? ss)
           in
           (begin
-            (writeln (car ss) out-pipe)
-            (writeln in out-pipe)
+            (displayln (car ss) out-pipe)
+            (displayln in out-pipe)
             (run-intcode (vector-copy code) in-pipe out-pipe)
-            (rec-run (cdr ss) (read in-pipe))))))
+            (rec-run (cdr ss) (read-line in-pipe))))))
     
     (rec-run p-settings 0)))
 
@@ -24,7 +24,7 @@
     (let ([acs (list->vector (map string->number ((make-csv-reader input))))])
       (foldl (lambda (settings highest)
                (parameterize ([current-output-port (open-output-nowhere)]) ; silence the prompt
-                 (max highest (pipeline acs settings))))
+                 (max highest (string->number (pipeline acs settings)))))
              0
              (permutations (range 0 5)))))
   (close-input-port input))
