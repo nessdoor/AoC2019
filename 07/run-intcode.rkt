@@ -2,6 +2,8 @@
 
 (provide run-intcode)
 
+(define exit-cont 'nocont) ; if set, this continuation is called before any blocking procedure or after the Intcode program has exited
+
 (define decoder ; return the d-th digit of n
   (lambda (n d)
     (if (= d 0)
@@ -30,11 +32,10 @@
   (lambda (v op ip m input output)
     (case op
       ((3) (display "> ")
-           (let ([input (read input)])
-             (if (exact-integer? input)
-                 (vector-set! v (vector-ref v (+ 1 ip)) input)
-                 (raise-user-error "Error: expected integer, given " input))))
-      ((4) (writeln (resolver v (+ 1 ip) m) output))
+           (when (not (or (char-ready? input) (eq? 'nocont exit-cont))) ; if the reading procedure would block, try and call the exit-cont
+             (set! exit-cont (call/cc (lambda (cc) (exit-cont cc)))))
+           (vector-set! v (vector-ref v (+ 1 ip)) (string->number (read-line input))))
+      ((4) (displayln (resolver v (+ 1 ip) m) output))
       (else (error "Unexpected IO opcode: " op)))
     (+ 2 ip)))
 
@@ -61,7 +62,7 @@
     (+ ip 4)))
 
 (define run-intcode ; run an intcode program
-  (lambda (v input-port output-port)
+  (lambda (v input-port output-port (cc 'nocont))
     (define ric-rec
       (lambda (ip)
         (let* ([instruction (vector-ref v ip)]
@@ -77,5 +78,8 @@
                             ((7 8) (compare v opcode ip mode0 mode1))               ; comparison branch
                             (else (error "Unexpected opcode: " opcode))))))))
 
-    (ric-rec 0)))
+    (set! exit-cont cc)
+    (ric-rec 0)
+    (when (not (eq? 'nocont exit-cont)) ; if exit-cont is set, call it as soon as the Intcode program stops
+      (exit-cont 'nocont))))
 
