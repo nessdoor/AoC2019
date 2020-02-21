@@ -39,7 +39,7 @@ loadCable pes = map (fmap normRange) $ layTrack (0 :+ 0) pes -- Starting point: 
 intersectsWith :: (Ix i) => Segment (i, i) -> Segment (i, i) -> Bool
 intersectsWith s1 s2 = rangeOverlaps (hRange s1) (hRange s2) && rangeOverlaps (vRange s1) (vRange s2)
     -- Two segments intersect when both of their space ranges overlap
-    where rangeOverlaps r1@(i1, f1) r2@(i2, f2) = or $ zipWith (inRange) [r1, r1, r2, r2] [i2, f2, i1, f1]
+        where rangeOverlaps (i1, f1) (i2, f2) = (i1 <= f2) && (f1 >= i2)
 
 -- | Find the intersection point between two segments
 intersectionPoints :: (Ix p) => Segment (p, p) -> Segment (p, p) -> [Point p]
